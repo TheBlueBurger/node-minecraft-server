@@ -105,3 +105,6 @@ dist
 
 # vs code
 .vscode/
+
+# the serber
+server/
