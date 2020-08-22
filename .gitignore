@@ -108,3 +108,6 @@ dist
 
 # the serber
 server/
+
+# test file
+test.js
