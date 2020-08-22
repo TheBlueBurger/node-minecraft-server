@@ -28,7 +28,8 @@ class minecraft_server {
             });
             server.stdout.on('data', data => {
                 if(data == null || data == "" || data == undefined) return;
-                eventThing.emit('console', data)
+                var text = data.toString().replace(/(\r\n|\n|\r)+$/, "");
+                eventThing.emit('console', text);
             });
         }
         try {
