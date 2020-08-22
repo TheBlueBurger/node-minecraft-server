@@ -49,7 +49,7 @@ class minecraft_server {
                     writer_error = true;
                 })
                 writer.on('close', () => {
-                    if(!writer_error) serverstart();
+                    if(!writer_error) return serverstart();
                     throw new Error("Error while downloading/writing!");
                 })
             });
@@ -69,6 +69,7 @@ class minecraft_server {
                     eventThing.runCommand("stop")
                 } catch(e) {eventThing.emit('console', e)}
             }
+            process.on('beforeExit', eventThing.stop);
         return eventThing;
     }
 }
