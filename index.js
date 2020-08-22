@@ -59,18 +59,14 @@ class minecraft_server {
         }
     })();
         eventThing.runCommand = function(cmd) {
-            try {
             server.stdin.write(cmd+"\n");
-            } catch(e) {
-                return new Error(e);
-            }
-            }
-            eventThing.stop = function() {
-                try {
-                    eventThing.runCommand("stop")
-                } catch(e) {eventThing.emit('console', e)}
-            }
-            process.on('beforeExit', eventThing.stop);
+        }
+        eventThing.stop = function() {
+            try {
+                eventThing.runCommand("stop")
+            } catch(e) {eventThing.emit('console', e)}
+        }
+        process.on('beforeExit', eventThing.stop);
         return eventThing;
     }
 }
