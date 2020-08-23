@@ -1,4 +1,3 @@
-// Illegal file
 class minecraft_server {
     constructor(JSONoptions = {}) {
         var server;
@@ -12,7 +11,6 @@ class minecraft_server {
         options.port = JSONoptions["port"] || 25565;
         options.ram = JSONoptions["ram"] || 1024; //TODO: Add ram
         options.info_callback = JSONoptions["info_callback"] || console.log;
-        // It's undefined because function() {} has its own "this" arrow functions dont have their own "this"
         var serverstart = () => {
             eventThing.emit('server_start', null);
             const child = require('child_process');
@@ -31,7 +29,7 @@ class minecraft_server {
                     });
                 }
             });
-        } // It should work fine with arrow functions
+        }
         try {
         require('fs').mkdirSync("server");
         }catch(e){}
@@ -59,12 +57,10 @@ class minecraft_server {
         }
     })();
         eventThing.runCommand = function(cmd) {
-            // Hm yes everything that you make is good
-            // Should we start with making the tcp client? yes
-            server.stdin.write(cmd+"\n"); //Yes
+            server.stdin.write(cmd+"\n");
         }
-        eventThing.stop = function() { //best function
-            try { // Oops
+        eventThing.stop = function() {
+            try {
                 eventThing.runCommand("stop");
             } catch(e) {eventThing.emit('console', e)}
         }
@@ -84,12 +80,12 @@ class Client extends EventEmitter {
         this.host = host;
         this.port = port;
         this.socket = net.createConnection({
-            host: this.host, // mabe but I have to eat brb like 20 mins
+            host: this.host,
             port: this.port
         });
-        this.socket.on("data", data => { // Kk
-            this.emit('packet', data); //gtg bye will be afk
-        }); // legal
+        this.socket.on("data", data => { 
+            this.emit('packet', data);
+        });
         this.socket.on("timeout", () => {
             this.emit("timeout", true);
         });
@@ -106,7 +102,6 @@ class Client extends EventEmitter {
     }
     sendPacket(data) {
         this.socket.write(data);
-        //ok now time for java plugin
     }
     end() {
         this.socket.end();
@@ -115,4 +110,4 @@ class Client extends EventEmitter {
     close() {return this.end();}
     stop() {return this.end();}
     send(a) {return this.sendPacket(a);}
-} //mabe
+} 
