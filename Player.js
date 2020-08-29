@@ -23,12 +23,10 @@ class Player {
                 "data": "health",
                 "requestId": theIdIGuess
             }));
-            // we should make it so it waits for an answer from the server
-            // just this.
             var listener = this.client.on("packet", onHealth);
             function onHealth(packet) {
-                if (packet.requestId == theIdIGuess) { // mabe
-                    this.client.removeListener("packet", onHealth); //ill push now
+                if (packet.requestId == theIdIGuess) {
+                    this.client.removeListener("packet", onHealth);
                     resolve(packet.health);
                 }
                 
@@ -37,9 +35,9 @@ class Player {
     }
 }
 var IDs = {};
-function generateID() { // carb
+function generateID() {
     var theNumber = Math.floor(Math.random() * 100000000000);
     if(!IDs[theNumber]) {
         IDs[theNumber] = true;
-    } else return generateID(); //i made that...
-} //:flushed: illegal
+    } else return generateID();
+}

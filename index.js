@@ -110,4 +110,4 @@ class Client extends EventEmitter {
     close() {return this.end();}
     stop() {return this.end();}
     send(a) {return this.sendPacket(a);}
-} 
+}
