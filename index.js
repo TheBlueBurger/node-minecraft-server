@@ -74,8 +74,8 @@ class minecraft_server extends EventEmitter {
   /**
    * @returns new Player()
    */
-  getPlayer() {
-    return Player;
+  getPlayer(uuid) {
+    return new Player(uuid, this.theClient);
   }
 }
 module.exports.MinecraftServer = minecraft_server;
