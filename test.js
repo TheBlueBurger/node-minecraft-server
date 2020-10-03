@@ -3,3 +3,4 @@ const server = new mcServer.MinecraftServer({
   software: 'paper',
 });
 server.runCommand;
+//test
