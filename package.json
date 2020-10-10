@@ -15,5 +15,6 @@
   },
   "devDependencies": {
     "eslint": "^7.9.0"
-  }
+  },
+  "typings": "./typings/index.d.ts"
 }
