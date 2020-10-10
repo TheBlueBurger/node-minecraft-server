@@ -1,2 +1,2 @@
 const mcSerber = require('./index.js');
-new mcSerber. // aaaaa
+new mcSerber. // aaaaa bad
