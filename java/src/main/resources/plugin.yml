@@ -1,0 +1,7 @@
+name: NodeMinecraftServerClient
+version: ${project.version}
+main: io.github.blueburgerstdd.nodeminecraftserverclient.NodeMinecraftServerClient
+api-version: 1.16
+commands:
+  test:
+    description: Very good test command

@@ -110,3 +110,5 @@ server/
 
 # test file
 test.js
+
+java/target/

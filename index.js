@@ -1,7 +1,6 @@
-import Player from "./Player";
+const Player = require('./Player')
 
-
-const { EventEmitter } = require('events');
+const { EventEmitter } = require('events')
 // interface OptionsInterface {
 //   info_callback?: Function;
 //   ram?: number;
@@ -10,124 +9,139 @@ const { EventEmitter } = require('events');
 // }
 
 class minecraft_server extends EventEmitter {
-  constructor(JSONoptions = {}) {
-    super();
-    this.server = null;
-    this.clientAlreadyCalled = false;
-    this.theClient = null;
-    var axios = require('axios');
-    var options = JSONoptions;
-    options.onlineMode = JSONoptions['onlineMode'] || true;
-    options.port = JSONoptions['port'] || 25565;
-    options.ram = JSONoptions['ram'] || 1024; //TODO: Add ram
-    options.info_callback = JSONoptions['info_callback'] || console.log;
-    this.options = options;
+  constructor (JSONoptions = {}) {
+    super()
+    this.server = null
+    this.clientAlreadyCalled = false
+    this.theClient = null
+    var axios = require('axios')
+    var options = JSONoptions
+    options.onlineMode = JSONoptions.onlineMode || true
+    options.port = JSONoptions.port || 25565
+    options.ram = JSONoptions.ram || 1024 // TODO: Add ram
+    options.info_callback = JSONoptions.info_callback || console.log
+    this.options = options
     var serverstart = () => {
-      this.emit('server_start', null);
-      const child = require('child_process');
+      this.emit('server_start', null)
+      const child = require('child_process')
       this.server = child.exec('java -jar server.jar nogui', {
-        cwd: __dirname + '/server/',
-      });
+        cwd: __dirname + '/server/'
+      })
       this.server.stdout.on('data', (data) => {
-        if (data == null || data == '' || data == undefined) return;
-        var text = data.toString().replace(/(\r\n|\n|\r)+$/, '');
-        this.emit('console', text);
+        if (data == null || data == '' || data == undefined) return
+        var text = data.toString().replace(/(\r\n|\n|\r)+$/, '')
+        this.emit('console', text)
         if (
           !this.clientAlreadyCalled &&
           text.includes('Waiting for client...')
         ) {
-          this.theClient = new Client();
-          this.clientAlreadyCalled = true;
+          this.theClient = new Client()
+          this.theClient.on("error", err => {
+            this.emit("error", err);
+          })
+          this.clientAlreadyCalled = true
           this.theClient.once('connect', () => {
-            this.emit('ready', true);
-          });
+            this.emit('ready', true)
+          })
         }
-      });
-    };
+      })
+    }
     try {
-      require('fs').mkdirSync('server');
+      require('fs').mkdirSync('server')
     } catch (e) {
-      ('ignoring this i guess lol');
+      ('ignoring this i guess lol')
     }
     (async () => {
       if (!require('fs').existsSync('./server/server.jar')) {
-        options.info_callback('Could not find server.jar, downloading...');
+        options.info_callback('Could not find server.jar, downloading...')
         axios({
           method: 'get',
           url: 'https://papermc.io/api/v1/paper/1.16.1/latest/download',
-          responseType: 'stream',
+          responseType: 'stream'
         }).then(function (response) {
-          var writer_error = false;
-          var writer = require('fs').createWriteStream('./server/server.jar');
-          response.data.pipe(writer);
+          var writer_error = false
+          var writer = require('fs').createWriteStream('./server/server.jar')
+          response.data.pipe(writer)
           writer.on('error', () => {
-            writer_error = true;
-          });
+            writer_error = true
+          })
           writer.on('close', () => {
-            if (!writer_error) return serverstart();
-            throw new Error('Error while downloading/writing!');
-          });
-        });
+            if (!writer_error) return serverstart()
+            throw new Error('Error while downloading/writing!')
+          })
+        })
       } else {
-        serverstart();
+        serverstart()
       }
-    })();
-    process.on('beforeExit', this.stop);
+    })()
+    process.on('beforeExit', this.stop)
   }
-  stop() {
-    this.runCommand('stop');
+
+  stop () {
+    this.runCommand('stop')
   }
-  runCommand(cmd) {
-    this.server.stdin.write(cmd + '\n');
+
+  runCommand (cmd) {
+    this.server.stdin.write(cmd + '\n')
   }
-  getPlayer(uuid) {
-    return new Player(uuid, this.theClient);
+
+  getPlayer (uuid) {
+    return new Player(uuid, this.theClient)
   }
 }
 
-const net = require('net');
+const net = require('net')
 class Client extends EventEmitter {
-  constructor(host = 'localhost', port = 18719) {
-    super();
-    this.connected = false;
-    this.host = host;
-    this.port = port;
+  constructor (host = 'localhost', port = 18719) {
+    super()
+    this.connected = false
+    this.host = host
+    this.port = port
     this.socket = net.createConnection({
       host: this.host,
-      port: this.port,
-    });
+      port: this.port
+    })
     this.socket.on('data', (data) => {
-      this.emit('packet', data);
-    });
+      this.emit('packet', data)
+    })
     this.socket.on('timeout', () => {
-      this.emit('timeout', true);
-    });
+      this.emit('timeout', true)
+    })
     this.socket.on('end', () => {
-      this.emit('end', true);
-    });
+      this.emit('end', true)
+    })
     this.socket.on('error', (error) => {
-      this.emit('error', error);
-    });
+      this.emit('error', error)
+    })
     this.socket.on('connect', () => {
-      this.emit('connect');
-      this.connected = true;
-    });
+      this.emit('connect')
+      this.connected = true
+    })
   }
-  sendPacket(data) {
-    this.socket.write(data);
+
+  sendPacket (data) {
+    this.socket.write(data + "\n", a => {
+      if(a) {
+        this.emit("error", a)
+      }
+    })
   }
-  end() {
-    this.socket.end();
+
+  end () {
+    this.socket.end()
   }
-  //all aliases shortened:
-  close() {
-    return this.end();
+
+  // all aliases shortened:
+  close () {
+    return this.end()
   }
-  stop() {
-    return this.end();
+
+  stop () {
+    return this.end()
   }
-  send(a) {
-    return this.sendPacket(a);
+
+  send (a) {
+    return this.sendPacket(a)
   }
 }
-module.exports.MinecraftServer = minecraft_server;
+module.exports.MinecraftServer = minecraft_server
