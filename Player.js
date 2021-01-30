@@ -1,3 +1,5 @@
+const { assert } = require("console");
+
 class Player {
   constructor (uuid, client) {
     // no, make it so theres a function "getJoinedAt()" that constacts the serber yes
@@ -5,26 +7,26 @@ class Player {
     this.uuid = uuid;
   }
 
-  getJoinedAt () {
-    return new Promise(async (resolve, reject) => {
-      this.client.sendPacket(
-        JSON.stringify({
-          request: 'getPlayerInfo',
-          uuid: this.uuid,
-          data: 'joinedAt',
-          requestId: generateID()
-        })
-      )
+  ban (reason = "Banned by an operator", kickPlayer = true, banIP = false) {
+    return sendData({
+      data: {
+        request: 'player',
+        uuid: this.uuid,
+        data: 'banPlayer',
+        reason: reason,
+        kickPlayer,
+        banIP
+      },
+      client: this.client,
+      addRequestId: true,
+    }).then(() => {
+      this.client.
     })
-    // hm now we need request IDs, so it can send back and it knows what it responds to
   }
-  /**
-   * @returns Promise<outputsForAutoComplete["getHealth"]>
-   */
   getHealth () {
     return sendData({
       data: {
-        request: 'getPlayerInfo',
+        request: 'player',
         uuid: this.uuid,
         data: 'health'
       },
@@ -53,15 +55,13 @@ function sendData(data) {
       JSON.stringify(json)
     )
     if(json["requestId"]) {
-    var listener = client.on('packet', onHealth)
-    function onHealth (packet) {
+    var listener = client.on('packet', onResp)
+    function onResp (packet) {
       packet = JSON.parse(packet);
-      console.log("Got packet: " + packet)
       if (packet.requestId == theIdIGuess.toString()) {
-        console.log("pass check")
-        client.removeListener('packet', onHealth)
+        client.removeListener('packet', onResp)
+        if(json["requestId"]) delete IDs[json["requestId"]]
         resolve(packet)
-        console.log("Resolved!")
       }
     }
   } else resolve();
@@ -69,7 +69,7 @@ function sendData(data) {
 }
 var IDs = {}
 function generateID () {
-  var theNumber = Math.floor(Math.random() * 100000000000)
+  var theNumber = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)
   if (!IDs[theNumber]) {
     IDs[theNumber] = true
     return theNumber;

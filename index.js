@@ -15,6 +15,7 @@ class minecraft_server extends EventEmitter {
     this.clientAlreadyCalled = false
     this.theClient = null
     var axios = require('axios')
+    
     var options = JSONoptions
     options.onlineMode = JSONoptions.onlineMode || true
     options.port = JSONoptions.port || 25565
@@ -35,7 +36,7 @@ class minecraft_server extends EventEmitter {
           !this.clientAlreadyCalled &&
           text.includes('Waiting for client...')
         ) {
-          this.theClient = new Client()
+          this.theClient = new Client(null, null, this);
           this.theClient.on("error", err => {
             this.emit("error", err);
           })
@@ -56,7 +57,7 @@ class minecraft_server extends EventEmitter {
         options.info_callback('Could not find server.jar, downloading...')
         axios({
           method: 'get',
-          url: 'https://papermc.io/api/v1/paper/1.16.1/latest/download',
+          url: 'https://papermc.io/api/v1/paper/1.16.5/latest/download',
           responseType: 'stream'
         }).then(function (response) {
           var writer_error = false
@@ -92,7 +93,8 @@ class minecraft_server extends EventEmitter {
 
 const net = require('net')
 class Client extends EventEmitter {
-  constructor (host = 'localhost', port = 18719) {
+  constructor (host = 'localhost', port = 18719, server) {
+    this.server = server
     super()
     this.connected = false
     this.host = host

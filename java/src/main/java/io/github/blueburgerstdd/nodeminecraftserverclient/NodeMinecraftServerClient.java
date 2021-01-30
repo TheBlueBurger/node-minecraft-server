@@ -5,7 +5,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -50,18 +52,21 @@ public final class NodeMinecraftServerClient extends JavaPlugin {
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "stop");
             }
         }
-        new Thread(() -> {
-            System.out.println("Node-Minecraft-Server is ready!");
-            String line = null;
-            while(true) {
-                try {
-                    line = br.readLine();
-                    if(line != null) {
-                        handlePacket(line);
-                    }
-                } catch(IOException ignored) {}
+        new BukkitRunnable() {
+            @Override
+                    public void run() {
+                        System.out.println("Node-Minecraft-Server is ready!");
+                        String line = null;
+                        while(true) {
+                            try {
+                                line = br.readLine();
+                                if(line != null) {
+                                    handlePacket(line);
+                                }
+                            } catch(IOException ignored) {}
+                        }
             }
-        }).start();
+        }.runTaskAsynchronously((Plugin) this);
         Objects.requireNonNull(this.getCommand("test")).setExecutor(new test());
     }
 
@@ -93,7 +98,6 @@ public final class NodeMinecraftServerClient extends JavaPlugin {
         }
         try {
             DataOutputStream out = new DataOutputStream(theClient.getOutputStream());
-            out.writeChars("carb!!!!!! but mabe");
             return true;
         } catch(Exception e) {
             return false;
@@ -101,30 +105,56 @@ public final class NodeMinecraftServerClient extends JavaPlugin {
     }
     private void handlePacket(String args) {
         try {
-            System.out.println(args.toString());
             Object datacarb = new JSONParser().parse(args);
             JSONObject data = (JSONObject) datacarb;
             if(data.get("request") != null) {
                 switch (data.get("request").toString()) {
-                    case "getPlayerInfo":
+                    case "player":
+                        Player player;
+                        JSONObject json;
                         switch (data.get("data").toString()) {
                             case "health":
-                                Player player = Bukkit.getPlayer(data.get("uuid").toString());
+                                player = Bukkit.getPlayer(data.get("uuid").toString().replaceAll("-", ""));
                                 if(player == null) {
-                                    JSONObject json = new JSONObject();
+                                    json = new JSONObject();
                                     json.put("success", "false");
                                     json.put("error", "Player not found!");
                                     respond(data, json);
                                     return;
                                 }
-                                JSONObject json = new JSONObject();
+                                json = new JSONObject();
                                 json.put("health", player.getHealth());
                                 json.put("max_health", player.getHealthScale());
+                                respond(data, json);
+                                break;
+                            case "banPlayer":
+                                player = Bukkit.getPlayer(data.get("uuid").toString().replaceAll("-", ""));
+                                if(player == null) {
+                                    json = new JSONObject();
+                                    json.put("success", "false");
+                                    json.put("error", "Player not found!");
+                                    respond(data, json);
+                                    return;
+                                }
+                                boolean banIP = (boolean) data.get("banIP");
+                                if (banIP) {
+                                    player.banPlayerIP(data.get("reason").toString());
+                                } else {
+                                    player.banPlayer(data.get("reason").toString());
+                                }
+                                if((boolean) data.get("kickPlayer")) new BukkitRunnable() {
+                                    @Override
+                                    public void run() {
+                                        player.kickPlayer(data.get("reason").toString());
+                                    }
+                                }.runTask((Plugin) this);
+                                json = new JSONObject();
+                                json.put("success", "true");
                                 respond(data, json);
                         }
                 }
             }
-        } catch (ParseException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -133,7 +163,6 @@ public final class NodeMinecraftServerClient extends JavaPlugin {
         if(requestId != null) {
             SendPacket.put("requestId", requestId);
         }
-        System.out.println("Sending data: " + SendPacket.toJSONString());
         out.println(SendPacket.toJSONString());
     }
 }
