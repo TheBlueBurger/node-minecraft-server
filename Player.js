@@ -20,7 +20,7 @@ class Player {
       client: this.client,
       addRequestId: true,
     }).then(() => {
-      this.client.
+      this.client.server.runCommand("kick " + this.uuid.replace(/\n/, "") + " " +)
     })
   }
   getHealth () {
