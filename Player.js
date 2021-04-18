@@ -20,7 +20,7 @@ class Player {
       client: this.client,
       addRequestId: true,
     }).then(() => {
-      this.client.server.runCommand("kick " + this.uuid.replace(/\n/, "") + " " +)
+      this.client.server.runCommand("kick " + this.uuid.replace(/\n/, "") + " " + reason)
     })
   }
   getHealth () {
@@ -34,7 +34,6 @@ class Player {
       client: this.client
     })
   }
-  uuid
 }
 function sendData(data) {
   return new Promise(async (resolve, reject) => {
