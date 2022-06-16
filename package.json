@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@types/node": "^16.10.3",
+    "@types/node": "^18.0.0",
     "axios": "^0.24.0"
   },
   "devDependencies": {
